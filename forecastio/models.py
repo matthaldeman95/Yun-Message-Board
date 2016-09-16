@@ -1,7 +1,7 @@
 from utils import UnicodeMixin, PropertyUnavailable
 import datetime
 import requests
-
+requests.packages.urllib3.disable_warnings()
 
 class Forecast(UnicodeMixin):
 
