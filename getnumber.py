@@ -7,7 +7,6 @@ long = -76.9931073
 
 forecast = api.load_forecast(api_key, lat, long)
 cond = forecast.currently().icon
-print cond
 
 if cond == 'clear-day':
     number = 0

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from forecastioimport api
+from forecastio import api
 
 api_key = "ef446c5824f00f366016c2d608e4e288"
 lat = 38.4634014

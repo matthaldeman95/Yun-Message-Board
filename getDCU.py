@@ -9,7 +9,6 @@ classes = Soup(str(soup.findAll('tr')))
 
 for c in classes:
     c = Soup(str(c))
-    #print c.prettify()
     data = c.find("td", attrs={"data-title": "Club"})
     if data:
         data = data.contents
@@ -39,12 +38,49 @@ d, bar = d.split("t")
 time = Soup(str(upc.find("div", attrs={"class": "timing"})))
 time = str(time.find("div", attrs={"class": "match_info"}).contents)
 foo, time, bar = time.split("'")
+time, bar = time.split("PM")
+
+if(m == "January"):
+    m = "Jan"
+    mon = 1
+elif(m == "February"):
+    m = "Feb"
+    mon = 2
+elif(m == "March"):
+    m = "Mar"
+    mon = 3
+elif(m == "April"):
+    m = "Apr"
+    mon = 4
+elif(m == "May"):
+    m = "May"
+    mon = 5
+elif(m == "June"):
+    m = "Jun"
+    mon = 6
+elif(m == "July"):
+    m = "Jul"
+    mon = 7
+elif(m == "August"):
+    m = "Aug"
+    mon = 8
+elif(m == "September"):
+    m = "Sep"
+    mon = 9
+elif(m == "October"):
+    m = "Oct"
+    mon = 10
+elif(m == "November"):
+    m = "Nov"
+    mon = 11
+elif(m == "December"):
+    m = "Dec"
+    mon = 12
 
 today = datetime.date.today()
-today = today.day
 
 print "DCU: (%s, %s-%s-%s) Next Match:" % (rank, w, l, t),
-if d == today:
+if int(d) == today.day and mon == today.month:
     print "Today, %s PM" % time
 else:
-    print "%s %s, %s" % (m, d, time)
+    print "%s %s, %s PM" % (m, d, time)
