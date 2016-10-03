@@ -1,5 +1,5 @@
 
-def getMonth(m):
+def getmonth(m):
 
     if m == "January":
         month = "Jan"

@@ -1,62 +1,62 @@
 #!/usr/bin/python
-from bs import BeautifulSoup, newurllib2
 from timeout import timeout, TimeoutError
 from datetime import datetime as dt
+import quickscraper
+import requests
 
-Soup = BeautifulSoup.BeautifulSoup
 
-def getRankRecord():
-    response = newurllib2.urlopen('http://www.nfl.com/teams/pittsburghsteelers/schedule?team=PIT').read()
-    soup = Soup(response)
+def get_rank_record():
 
-    ranking = str(soup.find("p", attrs={"class": "team-overall-ranking"}).contents)
+    infile = requests.get('http://www.nfl.com/teams/pittsburghsteelers/schedule?team=PIT').content
+    tree = quickscraper.create_tree(infile)
+    subtree = tree.find_tag_with_attrs('div', {'class': "team-info"})
+    rk = subtree.get_by_address('p[0]/@text')
+    rk = rk.split(" ")[0]
+    if "st" in rk:
+        rk = rk.split("s")[0]
+    elif "nd" in rk:
+        rk = rk.split("n")[0]
+    elif "rd" in rk:
+        rk = rk.split("r")[0]
+    elif "th" in rk:
+        rk = rk.split("th")[0]
 
-    rk = (ranking.split("'")[1].strip()).split(" ")[0][0]
-    rec = ranking.split("'")[2].strip()
-    rec = (rec.split("(")[1]).split(")")[0].strip()
+    rec = subtree.get_by_address('p[0]/span[0]/@text')
+    rec = (rec.split("(")[1]).split(")")[0]
 
     return rk, rec
 
-def getNextGame():
-    response = newurllib2.urlopen('http://www.sbnation.com/nfl/teams/pittsburgh-steelers').read()
-    soup = Soup(response)
-    soup = Soup(str(soup.find("div", attrs={"class": "sbn-pte-head-team-next-game"}).contents))
 
-    next = str(soup.find("p").contents)
-    date = ((next.split('        ')[1]).strip()).split("PM")[0].strip()
-    t = date.split(',')[3].strip()
-    date = date.split(',')[1].strip()
-    m, d = date.split(" ")
-    d = int(d)
+def get_next_game():
 
-    teams = str(soup.find("h4").contents)
-    team1 = (teams.split(">")[1].split("<")[0])
-    team2 = (teams.split(">")[3].split("<")[0])
-    if team1.strip() == "Pittsburgh Steelers":
-        opp = team2.strip()
-    else:
-        opp = team1.strip()
+    infile = requests.get('http://www.sbnation.com/nfl/teams/pittsburgh-steelers').content
+    tree = quickscraper.create_tree(infile)
+    subtree = tree.find_tag_with_attrs('div', {'class': "sbn-pte-head-team-next-game"})
+    opp_tree = subtree.get_by_address('h4[0]/a[0]/@element')
+    opp = opp_tree.text.split(' ')[2]
+    at_vs = opp_tree.get_by_address('span/@text')
+    if at_vs == "@":
+        at_vs = "at"
 
-    words = opp.split(" ")
-    if len(words) == 3:
-        opp = words[2]
-    else:
-        opp = words[1]
+    game_time = subtree.get_by_address('p[0]/@text').strip()
+    day, d, y, t = game_time.split(",")
+    m, d = d.strip().split(" ")
+    t = t.split("PM")[0].strip()
 
-    return m, d, t, opp
+    return m, d, t, at_vs, opp
 
 
 if __name__ == "__main__":
-    with timeout(seconds=5):
+    with timeout(seconds=10):
         try:
-            rank, record = getRankRecord()
-            month, day, time, opponent = getNextGame()
+            rank, record = get_rank_record()
+            month, date, time, atvs, opponent = get_next_game()
             today = dt.today().day
             print "Steelers (%s, %s):" % (rank, record),
-            if day == today:
-                print "Today, %s" % time
+            if int(date) == today:
+                print "Today, %s" % time,
             else:
-                print "%s %s, %s vs %s" % (month, day, time, opponent)
-
+                print "%s %s, %s" % (month, date, time),
+            print "%s %s" % (atvs, opponent)
         except TimeoutError:
             print ""

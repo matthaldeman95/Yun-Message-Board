@@ -1,70 +1,77 @@
 #!/usr/bin/python
-from bs import BeautifulSoup, newurllib2
 from timeout import timeout, TimeoutError
 from datetime import datetime as dt
-from calendar import getMonth
+from months import getmonth
+import requests
+import quickscraper
 
-Soup = BeautifulSoup.BeautifulSoup
 
+def get_rank_record():
+    infile = requests.get('http://www.dcunited.com/standings').content
+    tree = quickscraper.create_tree(infile)
+    dcu_found = False
+    index = 1
+    subtree = tree.find_tag_with_attrs('table', {'class': "standings_table"})
+    subtree = subtree.get_by_address('tbody/@element')
+    while not dcu_found:
+        team_line = subtree.get_by_address('tr[%d]/td[1]/@text' % index)
+        if "United" in team_line:
+            dcu_found = True
+        else:
+            index += 1
 
-def getRankRecord():
-    response = newurllib2.urlopen('http://www.dcunited.com/standings').read()
-    soup = Soup(response)
-
-    classes = Soup(str(soup.findAll('tr')))
-    for c in classes:
-        c = Soup(str(c))
-        data = c.find("td", attrs={"data-title": "Club"})
-        if data:
-            data = data.contents
-            foo, data, bar = str(data).split("'")
-            if data == "D.C. United":
-                break
-            else:
-                continue
-
-    r = str(c.find("td", attrs={"data-title": "Rank"}).contents)
-    r = r.split("'")[1]
-    w = str(c.find("td", attrs={"data-title": "Wins"}).contents)
-    w = w.split("'")[1]
-    l = str(c.find("td", attrs={"data-title": "Losses"}).contents)
-    l = l.split("'")[1]
-    t = str(c.find("td", attrs={"data-title": "Ties"}).contents)
-    t = t.split("'")[1]
+    dcu_tree = subtree.get_by_address('tr[%d]/@element' % index)
+    r = dcu_tree.find_tag_with_attrs('td', {'data-title': "Rank"}).text
+    w = dcu_tree.find_tag_with_attrs('td', {'data-title': "Wins"}).text
+    l = dcu_tree.find_tag_with_attrs('td', {'data-title': "Losses"}).text
+    t = dcu_tree.find_tag_with_attrs('td', {'data-title': "Ties"}).text
 
     return r, w, l, t
 
 
-def getNextMatchInfo():
+def get_next_match_info():
 
-    response = newurllib2.urlopen('http://www.dcunited.com/schedule').read()
-    soup = Soup(response)
-
-    upc = Soup(str(soup.find("li", attrs={"class": "last"})))
-    date = str(upc.find("div", attrs={"class": "match_details upcoming"}).contents)
-    date = date.split("'")[1]
+    infile = requests.get('http://www.dcunited.com/schedule').content
+    tree = quickscraper.create_tree(infile)
+    subtree = tree.find_tag_with_attrs('li', {'class': "last"})
+    subtree = subtree.find_tag_with_attrs('article', {'class': "match_item featured clb-sec twoclub"})
+    date = subtree.get_by_address('div[0]/div[0]/div[0]/@text')
     date = date.split(", ")[1]
     m, d = date.split(" ")
-    d = d.split("t")[0]
-    t = Soup(str(upc.find("div", attrs={"class": "timing"})))
-    t = str(t.find("div", attrs={"class": "match_info"}).contents)
-    t = t.split("'")[1]
-    t = t.split("PM")[0]
+    m_name, m_number = getmonth(m)
+    if "st" in d:
+        d = d.split("s")[0]
+    elif "nd" in d:
+        d = d.split("n")[0]
+    elif "rd" in d:
+        d = d.split("r")[0]
+    elif "th" in d:
+        d = d.split("t")[0]
 
-    opp = str(upc.find("div", attrs={"class": "club_container clubtwo"}).contents)
-    opp = opp.split('title="')[1]
-    opp = opp.split('"')[0]
+    t = subtree.get_by_address('div[0]/div[1]/div[0]/@text')
+    t = t.split(' ')[0].strip()
 
-    m_name, m_number = getMonth(m)
+    team1 = subtree.find_tag_with_attrs('div', {'class': "club_container"})
+    team1 = team1.get_by_address('img/@element')
+    team1_name = team1.attributes['title']
+    if "United" in team1_name:
+        team2 = subtree.find_tag_with_attrs('div', {'class': "club_container clubtwo"})
+        team2 = team2.get_by_address('img/@element')
+        opp = team2.attributes['title']
+        vs_at = "vs"
+    else:
+        opp = team1_name
+        vs_at = "at"
 
-    return d, m_name, m_number, t, opp
+    return d, m_name, m_number, t, opp, vs_at
 
 
 if __name__ == "__main__":
-    with timeout(seconds=5):
+
+    with timeout(seconds=10):
         try:
-            rank, wins, losses, ties = getRankRecord()
-            day, month_name, month_number, time, opponent = getNextMatchInfo()
+            rank, wins, losses, ties = get_rank_record()
+            day, month_name, month_number, time, opponent, vs = get_next_match_info()
             today = dt.today()
             print "DCU: (%s, %s-%s-%s):" % (rank, wins, losses, ties),
             if int(day) == today.day and month_number == today.month:
