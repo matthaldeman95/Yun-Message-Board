@@ -47,7 +47,7 @@ def get_next_game():
 
 
 if __name__ == "__main__":
-    with timeout(seconds=10):
+    with timeout(seconds=20):
         try:
             rank, record = get_rank_record()
             month, date, time, atvs, opponent = get_next_game()

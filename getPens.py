@@ -1,66 +1,44 @@
 #!/usr/bin/python
-from bs import BeautifulSoup, newurllib2
-
-Soup = BeautifulSoup.BeautifulSoup
-response = newurllib2.urlopen('http://www.cbssports.com/nhl/teams/page/PIT/pittsburgh-penguins').read()
-
-soup = Soup(response)
-
-rec = str(soup.find("div", attrs={"class": "record"}).contents)
-url, rec, other = rec.split(">")
-rec, other = rec.split("|")
-rec = rec.strip()
-rec, bar = rec.split(" ")
-
-foo, rank = other.split("Metropolitan")
-rank, bar = rank.split("<")
-rank = rank.strip()
-foo, rank = rank.split("(")
-rank, bar = rank.split(")")
-
-soup = Soup(str(soup.find("div", attrs={"class": "matchUpTeams"}).contents))
-
-dt = str(soup.find("div").contents)
-foo, date, other = dt.split("'")
-day, date, bar = date.split(",")
-    
-date = date.strip()
-m, d = date.split(" ")
-m = m.strip();
-d = d.strip()
-d = int(d)
-
-if(m == "January"):
-    m = "Jan"
-elif(m == "February"):
-    m = "Feb"
-elif(m == "March"):
-    m = "Mar"
-elif(m == "April"):
-    m = "Apr"
-elif(m == "September"):
-    m = "Sept"
-elif(m == "October"):
-    m = "Oct"
-elif(m == "November"):
-    m = "Nov"
-elif(m == "December"):
-    m = "Dec"
-
-foo, other, bar = other.split(">")
-time, bar = other.split("<")
-time, pm, zone = time.split(" ")
-
-print("Pens (%s, %s) Next Game: %s, %s %s, %s %s" % (rank, rec, day, m, d, time, pm))
+import requests
+import quickscraper
+from timeout import timeout, TimeoutError
+from datetime import datetime as dt
 
 
+def get_next_game():
+    html_file = requests.get('http://www.espn.com/nhl/team/_/name/pit/pittsburgh-penguins').content
+    tree = quickscraper.create_tree(html_file)
+    game_tree = tree.find_tag_with_attrs('div', {'class': "mod-container mod-no-footer mod-game current pre"})
+    d = game_tree.get_by_address('h4/@text')
+    d = d.split(",")[1].strip()
+    m, d = d.split(" ")
+    t = game_tree.get_by_address('h4/span/@text')
+    t = t.split("ET")[0].strip()
+
+    team1_tree = game_tree.find_tag_with_attrs('div', {'class': "team team-away"})
+    team1 = team1_tree.get_by_address('div/h6/@text').strip()
+    if team1.strip == "Pittsburgh":
+        at_vs = "at"
+        team2_tree = game_tree.find_tag_with_attrs('div', {'class': "team team-home"})
+        team2 = team2_tree.get_by_address('div/h6/@text').strip
+        opp = team2
+    else:
+        at_vs = "vs"
+        opp = team1
+
+    return d, m, t, at_vs, opp
 
 
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    with timeout(seconds=20):
+        try:
+            date, month, time, atvs, opponent = get_next_game()
+            today = dt.today()
+            print "Penguins: ",
+            if int(date) == today.day:
+                print "Today, ",
+            else:
+                print "%s %s" % (month, date),
+            print "%s %s" % (atvs, opponent)
+        except TimeoutError:
+            print ""

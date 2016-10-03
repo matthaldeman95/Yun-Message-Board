@@ -68,7 +68,7 @@ def get_next_match_info():
 
 if __name__ == "__main__":
 
-    with timeout(seconds=10):
+    with timeout(seconds=20):
         try:
             rank, wins, losses, ties = get_rank_record()
             day, month_name, month_number, time, opponent, vs = get_next_match_info()
