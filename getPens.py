@@ -39,6 +39,6 @@ if __name__ == "__main__":
                 print "Today, ",
             else:
                 print "%s %s" % (month, date),
-            print "%s %s" % (atvs, opponent)
+            print "%s %s %s" % (time, atvs, opponent)
         except TimeoutError:
             print ""
