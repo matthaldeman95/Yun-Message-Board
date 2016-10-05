@@ -1,10 +1,10 @@
 #!/usr/bin/python
-from forecastio import api
 
-api_key = "ef446c5824f00f366016c2d608e4e288"
-lat = 38.4634014
-long = -76.9931073
+with open("weather.csv") as infile:
+    for line in infile:
+        if "conditions" in line:
+            cond = line.split(",")[1].strip()
+        elif "range" in line:
+            range = line.split(",")[1].strip()
 
-forecast = api.load_forecast(api_key, lat, long)
-print forecast.currently().summary
-
+print cond + ", " + range
