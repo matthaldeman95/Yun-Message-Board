@@ -5,6 +5,8 @@ with open("weather.csv") as infile:
         if "icon" in line:
             cond = line.split(',')[1].strip()
 
+print cond
+
 if cond == 'clear-day':
     number = 0
 elif cond == 'clear-night':
@@ -19,7 +21,7 @@ elif cond == 'fog':
     number = 5
 elif cond == 'cloudy':
     number = 6
-elif cond == 'partly-cloudy-day' or cond == 'partly-cloud-night':
+elif cond == 'partly-cloudy-day' or cond == 'partly-cloudy-night':
     number = 7
 elif cond == 'thunderstorm':
     number = 8
