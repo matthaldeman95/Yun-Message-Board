@@ -5,7 +5,7 @@
 #include <Process.h>
 
 //Initialize LCD debug display
-LiquidCrystal lcd(7, 8, 9, 10, 11, 12) ;
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
 
 
 //Initialize Adafruit LED Backpacks
@@ -30,135 +30,6 @@ byte ADay, AHour, AMinute, ASecond, ABits;
 bool ADy, A12h, Apm;
 
 int temp;
-
-
-void setup() {
-  lcd.begin(16, 2);  lcd.print(F("Initializing..."));
-  Bridge.begin();
-  Serial.begin(9600);
-  
-  Serial.print(F("Initializing matrices..."));
-  
-  matrix0.begin(0x70);  Serial.print(F("0..."));
-  matrix1.begin(0x71);  Serial.print(F("1..."));
-  matrix2.begin(0x72);  Serial.print(F("2..."));
-  matrix3.begin(0x73);  Serial.print(F("3..."));
-  matrix4.begin(0x74);  Serial.print(F("4..."));
-  matrix6.begin(0x76);  Serial.print(F("6..."));
-  matrix7.begin(0x77);  Serial.print(F("7... Done"));
-  
-  for(int time = 90; time >=0; time--){
-    lcd.clear();
-    lcd.setCursor(0,0);  lcd.print(F("Initializing..."));
-    lcd.setCursor(0,1);  lcd.print(time);
-    Serial.println(time);
-    delay(1000);
-  }
-  
-  
-
-}
-
-void loop() {
-
-
-  int condnum;
-  String condition;
-  String data[5];
-
-  for (int dtcount = 0; dtcount < 20; ++dtcount) {
-
-    //If first run through 20x loop, collect all HTML data and assign to array
-    lcd.clear();  lcd.setCursor(0, 0);
-    lcd.print(F("Getting values.."));
-    if (dtcount == 0) {
-      temp = writeTemp();
-      condnum = getNumber();
-      data[0] = getCond();
-      data[1] = todayfc();
-      data[2] = tomfc();
-      data[3] = getSteelers();
-      data[4] = getPens();
-      data[5] = getMessage();
-    }
-
-    
-    //Read RTC time and write to 7-seg 0 every time
-    lcd.clear();  lcd.setCursor(0, 0);  lcd.print(F("Getting DCUNext..."));
-    lcd.clear();  lcd.setCursor(0, 1);  lcd.print(F("Getting time..."));
-    writeTime();
-
-    lcd.clear();
-    lcd.setCursor(0, 0);  lcd.print(F("Iteration "));
-    lcd.setCursor(11, 0);  lcd.print(dtcount);
-    lcd.setCursor(13, 0);  lcd.print(F("/20"));
-
-    writeCondMat(condnum);
-
-    //Run loop for every HTML string collected
-
-    for (int i = 0; i < 6; ++i) {
-
-      int ins = i % 2;
-      //Print loop number for debugging:
-      Serial.print(F("Instance number: "));  Serial.println(ins);
-      lcd.setCursor(0, 1);  lcd.print(F("Inst"));
-      lcd.setCursor(6, 1); lcd.print(i);
-
-      //If loop number is even, write the data
-
-      if (ins == 0) {
-
-        writeDate();
-        lcd.setCursor(8, 1);  lcd.print(F(",date"));
-      }
-
-      //If loop number is odd, write the temperature
-
-      else if (ins == 1) {
-
-        Serial.println(temp);
-        lcd.setCursor(8, 1);  lcd.print(F(",temp"));
-        float temptens = (temp) / 10;
-        float temphunds = temp / 100;
-        if (temptens < 1) {
-          matrix1.clear();
-          matrix1.writeDigitRaw(2, 0x10);
-          matrix1.writeDigitNum(0x03, temp);
-          matrix1.writeDisplay();
-        }
-        else if (temphunds < 1) {
-          float temps = temp - (temptens * 10);
-          matrix1.clear();
-          matrix1.writeDigitRaw(2, 0x10);
-          matrix1.writeDigitNum(0x01, temptens);
-          matrix1.writeDigitNum(0x03, temps);
-          matrix1.writeDisplay();
-        }
-      }
-      //Write datastring in array with index i
-      Serial.println(data[i]);
-      int strl = data[i].length();
-      int adjlength = (strl * 8 + 16);
-
-      matrix2.clear();  matrix3.clear();  matrix4.clear();  matrix6.clear();
-      matrix2.setTextSize(1);  matrix3.setTextSize(1);  matrix4.setTextSize(1);  matrix6.setTextSize(1);
-      matrix2.setRotation(3);  matrix3.setRotation(3);  matrix4.setRotation(3);  matrix6.setRotation(3);
-      matrix2.setTextWrap(false); matrix3.setTextWrap(false);  matrix4.setTextWrap(false);  matrix6.setTextWrap(false);
-      for (int n = 0; n >= -adjlength; n--) {
-        matrix2.clear(); matrix3.clear();   matrix4.clear();  matrix6.clear();
-        matrix2.setCursor(n + 24, 0);  matrix3.setCursor(n + 16, 0);  matrix4.setCursor(n + 8, 0);  matrix6.setCursor(n, 0);
-        matrix6.print(data[i]);  matrix4.print(data[i]);  matrix3.print(data[i]);  matrix2.print(data[i]);
-        matrix2.writeDisplay();  matrix3.writeDisplay();  matrix4.writeDisplay();  matrix6.writeDisplay();
-        delay(30);
-      }
-
-
-    }
-
-  }
-
-}
 
 //Weather images storage
 static const uint8_t PROGMEM
@@ -232,36 +103,6 @@ unknown_bmp[] =
   B00000000,
   B00010000,
 },
-tornado_bmp[] =
-{ B11111111,
-  B01111110,
-  B00111100,
-  B00011000,
-  B00010000,
-  B00000000,
-  B00000000,
-  B00000000,
-},
-hail_bmp[] =
-{ B00100001,
-  B01100011,
-  B11000110,
-  B11010110,
-  B00110001,
-  B01100011,
-  B01100110,
-  B00000110,
-},
-cold_bmp[] =
-{ B00000100,
-  B01110100,
-  B01010100,
-  B01110100,
-  B00000100,
-  B00011111,
-  B00001110,
-  B00000100,
-},
 partlycloudy_bmp[] =
 { B00001111,
   B00000111,
@@ -272,30 +113,140 @@ partlycloudy_bmp[] =
   B01111110,
   B00011000,
 },
-hot_bmp[] =
-{ B00000100,
-  B00001110,
-  B00011111,
-  B00000100,
-  B01110100,
-  B01010100,
-  B01110100,
-  B00000100,
-},
 clearnight_bmp[] =
-{ B01000000,
-  B11100000,
-  B01000100,
+{ B00000000,
+  B00100100,
+  B01110110,
+  B00100110,
   B00001110,
-  B00000100,
+  B01111110,
+  B00111100,
   B00010000,
-  B00111000,
-  B00010000,
+},
+smile_bmp[] =
+{ B00000000,
+  B01100110,
+  B01100110,
+  B00000000,
+  B01000010,
+  B00100100,
+  B00011000,
+  B00000000,
 };
 
-String getMessage(){
-  String message = "    ";
-  return message;
+void setup() {
+  lcd.begin(16, 2);
+  lcd.setCursor(0,0);  lcd.print(F("Hello, world!"));
+  Bridge.begin();
+  Serial.begin(9600);
+  
+  Serial.print(F("Initializing matrices..."));
+  
+  matrix0.begin(0x70);  matrix0.clear(); matrix0.writeDisplay();
+  matrix1.begin(0x71);  matrix1.clear(); matrix1.writeDisplay();
+  matrix2.begin(0x72);  matrix2.clear(); matrix2.writeDisplay();
+  matrix3.begin(0x73);  matrix3.clear(); matrix3.writeDisplay();
+  matrix4.begin(0x74);  matrix4.clear(); matrix4.writeDisplay();
+  matrix6.begin(0x76);  matrix6.clear(); matrix6.writeDisplay();
+  matrix7.begin(0x77);  matrix7.clear(); matrix7.writeDisplay();
+  
+  for(int time = 30; time >=0; time--){
+    lcd.clear();
+    lcd.setCursor(0,0);  lcd.print(F("Initializing..."));
+    lcd.setCursor(0,1);  lcd.print(time);
+    Serial.println(time);
+    delay(1000);
+  }
 }
 
+void loop() {
+  
+  int condition_number;
+  
+  int data_count = 4;
+  String data[data_count];
+
+  for (int dtcount = 0; dtcount < 20; ++dtcount) {
+
+    //If first run through 20x loop, collect all data and assign to array
+    if (dtcount == 0) {
+      getWeather();
+      temp = getTemp();
+      condition_number = getNumber();
+      data[0] = getCond();
+      data[1] = getDCU();
+      data[2] = getSteelers();
+      data[3] = getPens();
+      //data[4] = getMessage();
+    }
+
+    
+    //Read RTC time and write to 7-seg 0 every time
+    writeTime();
+
+    lcd.clear();
+    lcd.setCursor(0, 1);  lcd.print(dtcount+1);
+    lcd.setCursor(2, 1);  lcd.print(F("/20"));
+
+    writeCondMat(condition_number);
+
+    //Run loop for every HTML string collected
+
+    for (int i = 0; i < data_count; ++i) {
+
+      int ins = i % 2;
+      //Print loop number for debugging:
+      Serial.print(F("Instance number: "));  Serial.println(ins);
+      lcd.setCursor(13, 1); lcd.print(i+1);
+      lcd.setCursor(14, 1); lcd.print(F("/"));
+      lcd.setCursor(15, 1); lcd.print(data_count);
+
+      //If loop number is even, write the data
+
+      if (ins == 0) {
+
+        writeDate();
+      }
+
+      //If loop number is odd, write the temperature
+
+      else if (ins == 1) {
+
+        Serial.println(temp);
+        float temptens = (temp) / 10;
+        float temphunds = temp / 100;
+        if (temptens < 1) {
+          matrix1.clear();
+          matrix1.writeDigitRaw(2, 0x10);
+          matrix1.writeDigitNum(0x03, temp);
+          matrix1.writeDisplay();
+        }
+        else if (temphunds < 1) {
+          float temps = temp - (temptens * 10);
+          matrix1.clear();
+          matrix1.writeDigitRaw(2, 0x10);
+          matrix1.writeDigitNum(0x01, temptens);
+          matrix1.writeDigitNum(0x03, temps);
+          matrix1.writeDisplay();
+        }
+      }
+      //Write datastring in array with index i
+      Serial.println(data[i]);
+      int strl = data[i].length();
+      int adjlength = (strl * 8 + 16);
+
+      matrix2.clear();  matrix3.clear();  matrix4.clear();  matrix6.clear();
+      matrix2.setTextSize(1);  matrix3.setTextSize(1);  matrix4.setTextSize(1);  matrix6.setTextSize(1);
+      matrix2.setRotation(3);  matrix3.setRotation(3);  matrix4.setRotation(3);  matrix6.setRotation(3);
+      matrix2.setTextWrap(false); matrix3.setTextWrap(false);  matrix4.setTextWrap(false);  matrix6.setTextWrap(false);
+      for (int n = 0; n >= -adjlength; n--) {
+        matrix2.clear(); matrix3.clear();   matrix4.clear();  matrix6.clear();
+        matrix2.setCursor(n + 24, 0);  matrix3.setCursor(n + 16, 0);  matrix4.setCursor(n + 8, 0);  matrix6.setCursor(n, 0);
+        matrix6.print(data[i]);  matrix4.print(data[i]);  matrix3.print(data[i]);  matrix2.print(data[i]);
+        matrix2.writeDisplay();  matrix3.writeDisplay();  matrix4.writeDisplay();  matrix6.writeDisplay();
+        delay(30);
+      }
+    }
+  }
+}
 
