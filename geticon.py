@@ -21,6 +21,8 @@ elif cond == 'cloudy':
     number = 6
 elif cond == 'partly-cloudy-day' or cond == 'partly-cloud-night':
     number = 7
+elif cond == 'thunderstorm':
+    number = 8
 else:
     number = 10
 
