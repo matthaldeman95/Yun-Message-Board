@@ -1,10 +1,16 @@
 void getWeather()
 {
+  String output = "";
   Serial.println(F("Downloading weather data..."));
   lcd.clear();  lcd.setCursor(0,1); lcd.print(F("Getting weather..."));
   Process p;
   p.runShellCommand(F("/mnt/sda1/download_forecast.py"));
+  while (p.available()){
+    output = p.readString();
+    p.exitValue();
+  }
   p.close();
+  return;
 }
 
 int getTemp(){

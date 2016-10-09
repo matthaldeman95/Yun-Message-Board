@@ -177,7 +177,6 @@ void loop() {
       data[1] = getDCU();
       data[2] = getSteelers();
       data[3] = getPens();
-      //data[4] = getMessage();
     }
 
     
