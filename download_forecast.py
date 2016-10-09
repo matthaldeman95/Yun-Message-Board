@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import requests
 import sys
+from datetime import datetime as dt
 
 requests.packages.urllib3.disable_warnings()
 
@@ -13,6 +14,11 @@ url = 'https://api.darksky.net/forecast/%s/%s,%s' \
 
 outfile = open("weather.csv", 'w')
 sys.stdout = outfile
+
+date_time = dt.today()
+print "last updated,",
+print date_time.date(),
+print date_time.time()
 
 forecast = requests.get(url).content
 currently = forecast.split('currently":')[1]
