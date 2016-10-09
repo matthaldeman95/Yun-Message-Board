@@ -31,39 +31,25 @@ def get_rank_record():
 
 def get_next_match_info():
 
-    infile = requests.get('http://www.dcunited.com/schedule').content
+    infile = requests.get('http://www.espnfc.us/club/dc-united/193/fixtures').content
     tree = quickscraper.create_tree(infile)
-    subtree = tree.find_tag_with_attrs('li', {'class': "last"})
-    subtree = subtree.find_tag_with_attrs('article', {'class': "match_item featured clb-sec twoclub"})
-    date = subtree.get_by_address('div[0]/div[0]/div[0]/@text')
-    date = date.split(", ")[1]
-    m, d = date.split(" ")
-    m_name, m_number = getmonth(m)
-    if "st" in d:
-        d = d.split("s")[0]
-    elif "nd" in d:
-        d = d.split("n")[0]
-    elif "rd" in d:
-        d = d.split("r")[0]
-    elif "th" in d:
-        d = d.split("t")[0]
+    subtree = tree.find_tag_with_attrs('div', {'class': "next-match"})
 
-    t = subtree.get_by_address('div[0]/div[1]/div[0]/@text')
-    t = t.split(' ')[0].strip()
+    date = subtree.get_by_address('h3[0]/span[0]/@text')
+    date = (date.split('-')[1]).split(',')[0].strip()
+    m, d = date.split(' ')
 
-    team1 = subtree.find_tag_with_attrs('div', {'class': "club_container"})
-    team1 = team1.get_by_address('img/@element')
-    team1_name = team1.attributes['title']
-    if "United" in team1_name:
-        team2 = subtree.find_tag_with_attrs('div', {'class': "club_container clubtwo"})
-        team2 = team2.get_by_address('img/@element')
-        opp = team2.attributes['title']
-        vs_at = "vs"
+    team1 = subtree.get_by_address('div[0]/div[0]/div[0]/div[0]/div[0]/span[0]//img[0]/@text')
+    team2 = subtree.get_by_address('div[0]/div[0]/div[0]/div[0]/div[1]/span[0]//img[0]/@text')
+    if "United" in team1:
+        opp = team2
     else:
-        opp = team1_name
-        vs_at = "at"
+        opp = team1
 
-    return d, m_name, m_number, t, opp, vs_at
+    t = subtree.get_by_address('div[0]/div[0]/div[0]/div[2]/span[0]/@text')
+    t = t.split(' ')[0]+t.split(' ')[1]
+
+    return d, m, t, opp
 
 
 if __name__ == "__main__":
@@ -71,13 +57,13 @@ if __name__ == "__main__":
     with timeout(seconds=20):
         try:
             rank, wins, losses, ties = get_rank_record()
-            day, month_name, month_number, time, opponent, vs = get_next_match_info()
+            day, month, time, opponent= get_next_match_info()
             today = dt.today()
             print "DCU: (%s, %s-%s-%s):" % (rank, wins, losses, ties),
-            if int(day) == today.day and month_number == today.month:
+            if int(day) == today.day:
                 print "Today, %s" % time,
             else:
-                print "%s %s, %s" % (month_name, day, time),
+                print "%s %s, %s" % (month, day, time),
             print "vs", opponent
         except TimeoutError:
             print ""
