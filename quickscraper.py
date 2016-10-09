@@ -79,7 +79,7 @@ class Element:
             child_element.printTree()
         print "</%s" % self.tag+">"
 
-    def find_tag_with_attrs(self, tag, attrs):
+    def find_tag_with_attrs(self, tag, attrs, DEBUG = False):
         """
         Recursively search specifed element tree for particular tag and attributes
         Returns matching element if tag matches and all attributes specified are found in
@@ -90,6 +90,7 @@ class Element:
         :return:        First matching element in specified element tree
         """
         # TODO Return indexable list of matching elements!
+        # TODO start search from a smaller subtree rather than the entire html tree
         all_attrs_found = True
 
         """
@@ -125,7 +126,7 @@ def is_empty_element_tag(tag):
     """
     empty_elements = ['area', 'base', 'br', 'col', 'colgroup', 'command', 'embed', 'hr',
                       'img', 'input', 'keygen', 'link', 'meta', 'param', 'source',
-                      'track', 'wbr']
+                      'track', 'wbr', 'html']
     is_empty = False
     for el in empty_elements:
         if tag == el:
@@ -170,55 +171,28 @@ def parse_element(element):
     return tag, attrs
 
 
-def skip_header_list(html_file):
-    """
-    Ignore all lines of file until <body> begins, then ignore everything after </body>
-    Splits string up using opening brace "<" and returns a list of all elements in body
-    :param html_file:   String containing entire HTML file to be parsed
-    :return:            List of elements in body of file
-    """
-    elements = html_file.split("<")
-
-    body_list = []
-    header_skipped = False
-    footer_reached = False
-    for e in elements:
-        if not header_skipped:
-            # TODO other body attributes may appear??? this is a very hacky solution...
-            if "body class" in e or "body id" in e:
-                header_skipped = True
-        if header_skipped:
-            if not footer_reached:
-                body_list.append(e)
-            else:
-                break
-            if "/body" in e:
-                footer_reached = True
-
-    return body_list
-
-
-def create_tree(html_file):
+def create_tree(html_file, DEBUG = False):
     """
     Create an element tree of the body of an HTML string
     :param html_file:   HTML string
     :return:            Body element of the element tree created
     """
-    body_elements = skip_header_list(html_file)
-    text = body_elements[0].split(">")[1]
+    body_elements = html_file.split("<")
+    # text = body_elements[0].split(">")[1]
 
     # Get tag and attributes from the element
     tag, attrs = parse_element(body_elements[0])
 
     # Create empty body element
-    body = Element(tag, None, text, attrs)
-    current_element = body
+    tree = Element("tree", None, "", "")
+    current_element = tree
 
     # In_script used to throw away those pesky scripts that I don't really want anyway..
     in_script = False
 
     for el in range(1, len(body_elements)):
-        # print body_elements[el]
+        if DEBUG:
+            print body_elements[el]
 
         # Ignore comments completely
         if body_elements[el][0] == "!":
@@ -240,7 +214,7 @@ def create_tree(html_file):
         try:
             text = body_elements[el].split(">")[1]
         except IndexError:
-            # print "Index error: ", body_elements[el]
+            print "Index error: ", body_elements[el]
             pass
 
         tag, attrs = parse_element(body_elements[el])
@@ -249,9 +223,12 @@ def create_tree(html_file):
         if "/%s" % current_element.tag == tag:
             if "/body" == tag:
                 continue
-            # print "Ending element: %s" % tag
+            if DEBUG:
+                print "Ending element: %s" % tag
             current_element = current_element.parent
-            # print "Current element: ", current_element.tag, current_element.attributes
+            current_element.text += text
+            if DEBUG:
+                print "Current element: ", current_element.tag, current_element.attributes
 
         # If the element actually survived all those "ifs", create an Element object instance as a
         # child of the current element
@@ -260,22 +237,15 @@ def create_tree(html_file):
             el = Element(tag, current_element, text, attrs)
             current_element.children.append(el)
             current_element = el
-            # print "Created element:  %s" % tag, attrs, text
-            # print "with parent: ", current_element.parent.tag, current_element.parent.attributes
+            if DEBUG:
+                print "Created element:  %s" % tag, attrs, text
+                print "with parent: ", current_element.parent.tag, current_element.parent.attributes
 
             # If element tag is the tag of an empty HTML element, it will not have a closer tag,
             # so automatically close that element and go back to its parent
             if is_empty_element_tag(tag):
                 current_element = current_element.parent
-            # print "Current element: ", current_element.tag, current_element.attributes
+            if DEBUG:
+                print "Current element: ", current_element.tag, current_element.attributes
 
-    return body
-
-if __name__ == "__main__":
-    import requests
-    html = requests.get('https://www.github.com').content
-    tree = create_tree(html)
-    subtree = tree.find_tag_with_attrs('h2', {'class': "featurette-heading display-heading-2 mt-3 text-center"})
-    print subtree.text
-
-
+    return tree
