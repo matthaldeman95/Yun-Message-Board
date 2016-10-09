@@ -13,25 +13,22 @@ url = 'https://api.darksky.net/forecast/%s/%s,%s' \
               '?units=auto' % (api_key, lat, lng)
 
 outfile = open("weather.csv", 'w')
-sys.stdout = outfile
 
 date_time = dt.today()
-print "last updated,",
-print date_time.date(),
-print date_time.time()
+outfile.write("last updated, %s %s \n" % (str(date_time.date()), str(date_time.time())))
 
 forecast = requests.get(url).content
 currently = forecast.split('currently":')[1]
 currently, minutely = currently.split(',"minutely":')
 
-temp = int(float((currently.split('temperature":')[1]).split(",")[0].strip()))
-print "temperature,", temp
+temp = str(int(float((currently.split('temperature":')[1]).split(",")[0].strip())))
+outfile.write("temperature, %s \n" % temp)
 icon = (currently.split('icon":"')[1].split('","')[0]).strip()
-print "icon,", icon
+outfile.write("icon, %s \n" % icon)
 
 minutely, hourly = minutely.split(',"hourly":')
 cond = (hourly.split('summary":"')[1]).split('.","')[0]
-print "conditions,", cond
+outfile.write("conditions, %s \n" % cond)
 
 hourly, daily = hourly.split(',"daily":')
 
@@ -39,6 +36,6 @@ hourly, daily = hourly.split(',"daily":')
 mintemp = str(int(float((daily.split('"temperatureMin":')[1]).split(',"')[0].strip())))
 maxtemp = str(int(float((daily.split('"temperatureMax":')[1]).split(',"')[0].strip())))
 temp_range = mintemp + '-' + maxtemp
-print "range,", temp_range
+outfile.write("range, %s \n" % temp_range)
 
 outfile.close()
