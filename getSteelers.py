@@ -33,7 +33,11 @@ def get_next_game():
     tree = quickscraper.create_tree(infile)
     subtree = tree.find_tag_with_attrs('div', {'class': "sbn-pte-head-team-next-game"})
     opp_tree = subtree.get_by_address('h4[0]/a[0]/@element')
-    opp = opp_tree.text.split(' ')[2]
+    team1, team2 = opp_tree.text.split('  ')
+    if "Steelers" in team1:
+        opp = team2
+    else:
+        opp = team1
     at_vs = opp_tree.get_by_address('span/@text')
     if at_vs == "@":
         at_vs = "at"
