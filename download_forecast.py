@@ -12,7 +12,7 @@ lng = -76.9931073
 url = 'https://api.darksky.net/forecast/%s/%s,%s' \
               '?units=auto' % (api_key, lat, lng)
 
-outfile = open("weather.csv", 'w')
+outfile = open("/mnt/sda1/weather.csv", 'w')
 
 date_time = dt.today()
 outfile.write("last updated, %s %s \n" % (str(date_time.date()), str(date_time.time())))
