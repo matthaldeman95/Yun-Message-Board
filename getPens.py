@@ -32,6 +32,7 @@ def get_next_game():
 if __name__ == "__main__":
     with timeout(seconds=20):
         try:
+            get_next_game()
             date, month, time, atvs, opponent = get_next_game()
             today = dt.today()
             print "Penguins: ",

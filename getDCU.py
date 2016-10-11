@@ -11,8 +11,9 @@ def get_rank_record():
     tree = quickscraper.create_tree(infile)
     dcu_found = False
     index = 1
-    subtree = tree.find_tag_with_attrs('table', {'class': "standings_table"})
+    subtree = tree.find_tag_with_attrs('table', {'class': "standings_table"})[0]
     subtree = subtree.get_by_address('tbody/@element')
+
     while not dcu_found:
         team_line = subtree.get_by_address('tr[%d]/td[1]/@text' % index)
         if "United" in team_line:
@@ -46,7 +47,10 @@ def get_next_match_info():
     else:
         opp = team1
 
-    t = subtree.get_by_address('div[0]/div[0]/div[0]/div[2]/span[0]/@text')
+    t = subtree.find_tag_with_attrs('span', {'class': "time gmt-time"}).text
+    hr, t = t.split(':')
+    hr = str(int(hr)-4)
+    t = hr+':'+t
     t = t.split(' ')[0]+t.split(' ')[1]
 
     return d, m, t, opp
