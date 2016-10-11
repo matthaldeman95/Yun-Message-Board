@@ -26,7 +26,7 @@ int getTemp(){
   p.close();
   Serial.println(F("Temp process complete"));
   Serial.println(temperature);
-  temp = temperature.toInt();
+  int temp = temperature.toInt();
   return temp;
   }
 

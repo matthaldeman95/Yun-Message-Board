@@ -165,9 +165,9 @@ void loop() {
   
   int data_count = 4;
   String data[data_count];
+  
 
   for (int dtcount = 0; dtcount < 20; ++dtcount) {
-
     //If first run through 20x loop, collect all data and assign to array
     if (dtcount == 0) {
       getWeather();
