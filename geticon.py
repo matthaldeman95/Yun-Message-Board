@@ -5,8 +5,6 @@ with open("/mnt/sda1/weather.csv") as infile:
         if "icon" in line:
             cond = line.split(',')[1].strip()
 
-print cond
-
 if cond == 'clear-day':
     number = 0
 elif cond == 'clear-night':
