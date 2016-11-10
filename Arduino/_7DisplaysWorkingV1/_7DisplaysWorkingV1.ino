@@ -163,7 +163,7 @@ void loop() {
   
   int condition_number;
   
-  int data_count = 4;
+  int data_count = 3;
   String data[data_count];
   
 
@@ -174,9 +174,8 @@ void loop() {
       temp = getTemp();
       condition_number = getNumber();
       data[0] = getCond();
-      data[1] = getDCU();
-      data[2] = getSteelers();
-      data[3] = getPens();
+      data[1] = getSteelers();
+      data[2] = getPens();
     }
 
     

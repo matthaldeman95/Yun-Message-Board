@@ -39,15 +39,14 @@ void writeTime(){
 void writeDate(){
   matrix1.clear();
   float month = Clock.getMonth(Century);
-  float montens = month/10;
-  if(montens < 1){
+  Serial.println(month);
+  if(month > 10){
     matrix1.writeDigitNum(0x00, month);
     matrix1.writeDisplay();
   }
   else{
-    float months = month - (montens*10);
-    matrix1.writeDigitNum(0x00, montens);
-    matrix1.writeDigitNum(0x01, months);
+    matrix1.writeDigitNum(0x00, 1);
+    matrix1.writeDigitNum(0x01, month-10);
     matrix1.writeDisplay();
   }
   
