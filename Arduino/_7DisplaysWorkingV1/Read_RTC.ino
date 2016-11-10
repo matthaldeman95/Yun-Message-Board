@@ -40,7 +40,7 @@ void writeDate(){
   matrix1.clear();
   float month = Clock.getMonth(Century);
   Serial.println(month);
-  if(month > 10){
+  if(month < 10){
     matrix1.writeDigitNum(0x00, month);
     matrix1.writeDisplay();
   }
