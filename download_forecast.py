@@ -6,8 +6,8 @@ from datetime import datetime as dt
 requests.packages.urllib3.disable_warnings()
 
 api_key = "ef446c5824f00f366016c2d608e4e288"
-lat = 38.4634014
-lng = -76.9931073
+lat = 37.3133548
+lng = -121.9772077
 
 url = 'https://api.darksky.net/forecast/%s/%s,%s' \
               '?units=auto' % (api_key, lat, lng)
