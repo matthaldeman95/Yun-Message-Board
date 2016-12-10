@@ -3,6 +3,7 @@ import requests
 import quickscraper
 from timeout import timeout, TimeoutError
 from datetime import datetime as dt
+import datetime
 
 
 def get_rank_record(in_tree):
@@ -30,6 +31,22 @@ def get_next_game(in_tree):
     t = game_tree.get_by_address('h4/span/@text')
     t = t.split("ET")[0].strip()
 
+    # Create datetime object from extracted values, subtract timedelta for timezones
+    game_time = m + ' ' + d + ' ' + '2016' + ' ' + t
+    game_time = dt.strptime(game_time, '%b %d %Y %I:%M %p')
+    timezone_adj = datetime.timedelta(hours=3)
+    game_time -= timezone_adj
+
+    d = game_time.day
+    h = game_time.hour
+    if h > 12:
+        h -= 12
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    min = game_time.strftime('%M')
+    t = "%d:%s %s" % (h, min, ampm)
+
     team1_tree = game_tree.find_tag_with_attrs('div', {'class': "team team-away"})
     team1 = team1_tree.get_by_address('div/h6/@text').strip()
     if "Pittsburgh" in team1:
@@ -52,10 +69,12 @@ if __name__ == "__main__":
             tree = quickscraper.create_tree(html_file)
             record, rank = get_rank_record(tree)
             date, month, time, atvs, opponent = get_next_game(tree)
-            today = dt.today()
+            today = dt.today().day
             print "Penguins (%s, %s):" % (rank, record),
-            if int(date) == today.day:
+            if int(date) == today:
                 print "Today,",
+            elif int(date) == today + 1:
+                print "Tomorrow,",
             else:
                 print "%s %s" % (month, date),
             print "%s %s %s" % (time, atvs, opponent)

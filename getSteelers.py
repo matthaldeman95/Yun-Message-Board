@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from timeout import timeout, TimeoutError
 from datetime import datetime as dt
+import datetime
 import quickscraper
 import requests
 
@@ -45,7 +46,24 @@ def get_next_game():
     game_time = subtree.get_by_address('p[0]/@text').strip()
     day, d, y, t = game_time.split(",")
     m, d = d.strip().split(" ")
-    t = t.split("PM")[0].strip()
+    t, ampm, tz = t.strip().split(" ")
+    y, t = y.strip(), t.strip()
+
+    # Create datetime object from extracted values, subtract timedelta for timezones
+    game_time = m + ' ' + d + ' ' + y + ' ' + t + ' ' + ampm
+    game_time = dt.strptime(game_time, '%b %d %Y %I:%M %p')
+    timezone_adj = datetime.timedelta(hours=3)
+    game_time -= timezone_adj
+
+    d = game_time.day
+    h = game_time.hour
+    if h > 12:
+        h -= 12
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    min = game_time.strftime('%M')
+    t = "%d:%s %s" % (h, min, ampm)
 
     return m, d, t, at_vs, opp
 
@@ -58,9 +76,11 @@ if __name__ == "__main__":
             today = dt.today().day
             print "Steelers (%s, %s):" % (rank, record),
             if int(date) == today:
-                print "Today, %s" % time,
+                print "Today,",
+            elif int(date) == today + 1:
+                print "Tomorrow,",
             else:
-                print "%s %s, %s" % (month, date, time),
-            print "%s %s" % (atvs, opponent)
+                print "%s %s, " % (month, date),
+            print "%s %s %s" % (time, atvs, opponent)
         except TimeoutError:
             print ""
