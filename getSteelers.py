@@ -4,6 +4,8 @@ from datetime import datetime as dt
 import datetime
 import quickscraper
 import requests
+import os
+import subprocess
 
 
 def get_rank_record():
@@ -30,9 +32,15 @@ def get_rank_record():
 
 def get_next_game():
 
-    infile = requests.get('http://www.sbnation.com/nfl/teams/pittsburgh-steelers').content
+    #infile = requests.get('http://www.sbnation.com/nfl/teams/pittsburgh-steelers').content
+    #infile = os.system("curl http://www.sbnation.com/nfl/teams/pittsburgh-steelers")
+    infile = subprocess.Popen("curl -s http://www.sbnation.com/nfl/teams/pittsburgh-steelers", shell=True,
+                              stdout=subprocess.PIPE).communicate()[0]
+
     tree = quickscraper.create_tree(infile)
     subtree = tree.find_tag_with_attrs('div', {'class': "sbn-pte-head-team-next-game"})
+
+
     opp_tree = subtree.get_by_address('h4[0]/a[0]/@element')
     team1, team2 = opp_tree.text.split('  ')
     if "Steelers" in team1:
@@ -68,13 +76,16 @@ def get_next_game():
     return m, d, t, at_vs, opp
 
 
+
 if __name__ == "__main__":
     with timeout(seconds=20):
         try:
-            rank, record = get_rank_record()
+            #rank, record = get_rank_record()
             month, date, time, atvs, opponent = get_next_game()
+            #get_next_game()
+
             today = dt.today().day
-            print "Steelers (%s, %s):" % (rank, record),
+            print "Steelers next game: ",
             if int(date) == today:
                 print "Today,",
             elif int(date) == today + 1:
@@ -82,5 +93,6 @@ if __name__ == "__main__":
             else:
                 print "%s %s, " % (month, date),
             print "%s %s %s" % (time, atvs, opponent)
+
         except TimeoutError:
             print ""

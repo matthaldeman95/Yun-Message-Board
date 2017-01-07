@@ -197,7 +197,7 @@ def create_tree(html_file, debug=False):
 
     for el in range(1, len(body_elements)):
         if debug:
-            print body_elements[el]
+            print "Current element:", body_elements[el]
 
         # Ignore comments
         if body_elements[el][0] == "!":
