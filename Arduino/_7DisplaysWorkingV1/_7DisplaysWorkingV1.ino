@@ -201,14 +201,14 @@ void loop() {
 
       //If loop number is even, write the data
 
-      if (ins == 0) {
+      if (ins == 1) {
 
         writeDate();
       }
 
       //If loop number is odd, write the temperature
 
-      else if (ins == 1) {
+      else if (ins == 0) {
 
         Serial.println(temp);
         float temptens = (temp) / 10;

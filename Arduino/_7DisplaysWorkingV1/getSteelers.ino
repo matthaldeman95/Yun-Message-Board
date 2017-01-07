@@ -1,7 +1,7 @@
 String getSteelers() {
   String Steelers = "";
   Serial.println(F("Steelers process initializing..."));
-  lcd.clear();  lcd.setCursor(0,0);  lcd.print(F("Got DCU!"));
+  lcd.clear();  lcd.setCursor(0,0);  lcd.print(F("Got weather"));
   lcd.setCursor(0,1);  lcd.print(F("Getting Steelers.."));
   Process p;
   p.runShellCommand(F("/mnt/sda1/getSteelers.py"));
