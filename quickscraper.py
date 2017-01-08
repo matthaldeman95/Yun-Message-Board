@@ -60,7 +60,7 @@ class Element:
                 try:
                     current = matching_tags[index]
                 except IndexError:
-                    print "Invalid index"
+                    raise
             else:
                 for el in current.children:
                     if el.tag == a:

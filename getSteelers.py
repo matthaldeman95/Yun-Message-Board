@@ -6,6 +6,7 @@ import quickscraper
 import requests
 import os
 import subprocess
+import sys
 
 
 def get_rank_record():
@@ -39,7 +40,6 @@ def get_next_game():
 
     tree = quickscraper.create_tree(infile)
     subtree = tree.find_tag_with_attrs('div', {'class': "sbn-pte-head-team-next-game"})
-
 
     opp_tree = subtree.get_by_address('h4[0]/a[0]/@element')
     team1, team2 = opp_tree.text.split('  ')
@@ -81,7 +81,10 @@ if __name__ == "__main__":
     with timeout(seconds=20):
         try:
             #rank, record = get_rank_record()
-            month, date, time, atvs, opponent = get_next_game()
+            try:
+                month, date, time, atvs, opponent = get_next_game()
+            except:
+                sys.exit()
             #get_next_game()
 
             today = dt.today().day
