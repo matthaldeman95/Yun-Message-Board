@@ -1,10 +1,8 @@
 #!/usr/bin/python
+import json
 
-with open("/mnt/sda1/weather.csv") as infile:
-    for line in infile:
-        if "conditions" in line:
-            cond = line.split(",")[1].strip()
-        elif "range" in line:
-            range = line.split(",")[1].strip()
+with open("/mnt/sda1/data/weather.json") as infile:
 
-print cond + ", " + range
+    data = json.load(infile)
+
+print data['conditions'] + ', %d-%d' % (data['min_temp'], data['max_temp'])

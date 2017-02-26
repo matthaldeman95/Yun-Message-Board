@@ -67,4 +67,15 @@ String getCond(){
   return condition;
 }
 
+String getIP(){
+  String ip = "";
+  Process p;
+  p.runShellCommand(F("/mnt/sda1/get_ip.py"));
+  while (p.available()){
+    ip = p.readString();
+    p.exitValue();
+  }
+  p.close();
+  return ip;
+}
 

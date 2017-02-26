@@ -1,9 +1,10 @@
 #!/usr/bin/python
+import json
 
-with open("/mnt/sda1/weather.csv") as infile:
-    for line in infile:
-        if "icon" in line:
-            cond = line.split(',')[1].strip()
+with open("/mnt/sda1/data/weather.json") as infile:
+
+    data = json.load(infile)
+    cond = data['icon']
 
 if cond == 'clear-day':
     number = 0

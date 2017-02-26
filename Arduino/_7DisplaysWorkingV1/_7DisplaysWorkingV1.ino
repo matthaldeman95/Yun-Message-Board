@@ -149,7 +149,9 @@ void setup() {
   matrix4.begin(0x74);  matrix4.clear(); matrix4.writeDisplay();
   matrix6.begin(0x76);  matrix6.clear(); matrix6.writeDisplay();
   matrix7.begin(0x77);  matrix7.clear(); matrix7.writeDisplay();
-  
+  //populate initial data on startup, cron will take over afterward
+  getWeather();
+  download_pens();
   for(int time = 30; time >=0; time--){
     lcd.clear();
     lcd.setCursor(0,0);  lcd.print(F("Initializing..."));
@@ -162,22 +164,23 @@ void setup() {
 void loop() {
   
   int condition_number;
+  String ip;
   
-  int data_count = 3;
+  int data_count = 2;
   String data[data_count];
   
 
   for (int dtcount = 0; dtcount < 20; ++dtcount) {
     //If first run through 20x loop, collect all data and assign to array
     if (dtcount == 0) {
-      getWeather();
+      ip = getIP();
       temp = getTemp();
       condition_number = getNumber();
       data[0] = getCond();
-      data[1] = getSteelers();
-      data[2] = getPens();
+      data[1] = getPens();
     }
 
+    
     
     //Read RTC time and write to 7-seg 0 every time
     writeTime();
@@ -185,6 +188,7 @@ void loop() {
     lcd.clear();
     lcd.setCursor(0, 1);  lcd.print(dtcount+1);
     lcd.setCursor(2, 1);  lcd.print(F("/20"));
+    lcd.setCursor(0, 0);  lcd.print(ip);
 
     writeCondMat(condition_number);
 

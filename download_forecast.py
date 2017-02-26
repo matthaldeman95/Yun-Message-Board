@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import requests
-import sys
 from datetime import datetime as dt
+import json
 
 requests.packages.urllib3.disable_warnings()
 
@@ -12,30 +12,31 @@ lng = -121.9772077
 url = 'https://api.darksky.net/forecast/%s/%s,%s' \
               '?units=auto' % (api_key, lat, lng)
 
-outfile = open("/mnt/sda1/weather.csv", 'w')
+data = {}
 
-date_time = dt.today()
-outfile.write("last updated, %s %s \n" % (str(date_time.date()), str(date_time.time())))
+date_time = str(dt.today())
+data['last_updated'] = date_time
 
 forecast = requests.get(url).content
 currently = forecast.split('currently":')[1]
 currently, minutely = currently.split(',"minutely":')
+temp = int(float((currently.split('temperature":')[1]).split(",")[0].strip()))
+data['temperature'] = temp
 
-temp = str(int(float((currently.split('temperature":')[1]).split(",")[0].strip())))
-outfile.write("temperature, %s \n" % temp)
 icon = (currently.split('icon":"')[1].split('","')[0]).strip()
-outfile.write("icon, %s \n" % icon)
+data['icon'] = icon
 
 minutely, hourly = minutely.split(',"hourly":')
 cond = (hourly.split('summary":"')[1]).split('.","')[0]
-outfile.write("conditions, %s \n" % cond)
+data['conditions'] = cond
 
 hourly, daily = hourly.split(',"daily":')
 
+mintemp = int(float((daily.split('"temperatureMin":')[1]).split(',"')[0].strip()))
+maxtemp = int(float((daily.split('"temperatureMax":')[1]).split(',"')[0].strip()))
+data['min_temp'] = mintemp
+data['max_temp'] = maxtemp
 
-mintemp = str(int(float((daily.split('"temperatureMin":')[1]).split(',"')[0].strip())))
-maxtemp = str(int(float((daily.split('"temperatureMax":')[1]).split(',"')[0].strip())))
-temp_range = mintemp + '-' + maxtemp
-outfile.write("range, %s \n" % temp_range)
+with open('/mnt/sda1/data/weather.json', 'w') as outfile:
 
-outfile.close()
+    json.dump(data, outfile)
