@@ -2,6 +2,7 @@
 import requests
 from datetime import datetime as dt
 import json
+import pprint
 
 requests.packages.urllib3.disable_warnings()
 
@@ -14,26 +15,23 @@ url = 'https://api.darksky.net/forecast/%s/%s,%s' \
 
 data = {}
 
-date_time = str(dt.today())
-data['last_updated'] = date_time
+data['last_updated'] = str(dt.today())
 
 forecast = requests.get(url).content
-currently = forecast.split('currently":')[1]
-currently, minutely = currently.split(',"minutely":')
-temp = int(float((currently.split('temperature":')[1]).split(",")[0].strip()))
+forecast = json.loads(forecast)
+
+temp = int(forecast['currently']['temperature'])
 data['temperature'] = temp
 
-icon = (currently.split('icon":"')[1].split('","')[0]).strip()
+icon = forecast['currently']['icon']
 data['icon'] = icon
 
-minutely, hourly = minutely.split(',"hourly":')
-cond = (hourly.split('summary":"')[1]).split('.","')[0]
+cond = forecast['hourly']['summary']
 data['conditions'] = cond
 
-hourly, daily = hourly.split(',"daily":')
-
-mintemp = int(float((daily.split('"temperatureMin":')[1]).split(',"')[0].strip()))
-maxtemp = int(float((daily.split('"temperatureMax":')[1]).split(',"')[0].strip()))
+today = forecast['daily']['data'][0]
+mintemp = int(today['temperatureMin'])
+maxtemp = int(today['temperatureMax'])
 data['min_temp'] = mintemp
 data['max_temp'] = maxtemp
 

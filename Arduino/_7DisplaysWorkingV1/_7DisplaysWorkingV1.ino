@@ -150,8 +150,6 @@ void setup() {
   matrix6.begin(0x76);  matrix6.clear(); matrix6.writeDisplay();
   matrix7.begin(0x77);  matrix7.clear(); matrix7.writeDisplay();
   //populate initial data on startup, cron will take over afterward
-  getWeather();
-  download_pens();
   for(int time = 30; time >=0; time--){
     lcd.clear();
     lcd.setCursor(0,0);  lcd.print(F("Initializing..."));
@@ -159,6 +157,8 @@ void setup() {
     Serial.println(time);
     delay(1000);
   }
+  getWeather();
+  download_pens();
 }
 
 void loop() {
@@ -170,7 +170,7 @@ void loop() {
   String data[data_count];
   
 
-  for (int dtcount = 0; dtcount < 20; ++dtcount) {
+  for (int dtcount = 0; dtcount < 5; ++dtcount) {
     //If first run through 20x loop, collect all data and assign to array
     if (dtcount == 0) {
       ip = getIP();
@@ -187,7 +187,7 @@ void loop() {
 
     lcd.clear();
     lcd.setCursor(0, 1);  lcd.print(dtcount+1);
-    lcd.setCursor(2, 1);  lcd.print(F("/20"));
+    lcd.setCursor(2, 1);  lcd.print(F("/10"));
     lcd.setCursor(0, 0);  lcd.print(ip);
 
     writeCondMat(condition_number);
