@@ -170,7 +170,7 @@ void loop() {
   String data[data_count];
   
 
-  for (int dtcount = 0; dtcount < 5; ++dtcount) {
+  for (int dtcount = 0; dtcount < 10; ++dtcount) {
     //If first run through 20x loop, collect all data and assign to array
     if (dtcount == 0) {
       ip = getIP();
